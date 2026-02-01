@@ -1,0 +1,12 @@
+[
+  { "polish_word": "tak", "english_word": "yes", "pronunciation": "tahk", "example_sentence_pl": "Tak, chcę herbatę.", "example_sentence_en": "Yes, I want tea." },
+  { "polish_word": "nie", "english_word": "no / not", "pronunciation": "nyeh", "example_sentence_pl": "Nie mam czasu.", "example_sentence_en": "I don't have time." },
+  { "polish_word": "ja", "english_word": "I", "pronunciation": "yah", "example_sentence_pl": "Ja jestem studentem.", "example_sentence_en": "I am a student." },
+  { "polish_word": "to", "english_word": "this / it", "pronunciation": "toh", "example_sentence_pl": "To jest mój dom.", "example_sentence_en": "This is my house." },
+  { "polish_word": "jest", "english_word": "is", "pronunciation": "yest", "example_sentence_pl": "On jest wysoki.", "example_sentence_en": "He is tall." },
+  { "polish_word": "na", "english_word": "on / for", "pronunciation": "nah", "example_sentence_pl": "Książka jest na stole.", "example_sentence_en": "The book is on the table." },
+  { "polish_word": "się", "english_word": "oneself (reflexive)", "pronunciation": "shyeh", "example_sentence_pl": "Uczę się polskiego.", "example_sentence_en": "I am learning Polish." },
+  { "polish_word": "co", "english_word": "what", "pronunciation": "tsoh", "example_sentence_pl": "Co robisz?", "example_sentence_en": "What are you doing?" },
+  { "polish_word": "ten", "english_word": "this (masc.)", "pronunciation": "ten", "example_sentence_pl": "Ten dom jest duży.", "example_sentence_en": "This house is big." },
+  { "polish_word": "jak", "english_word": "how / like", "pronunciation": "yahk", "example_sentence_pl": "Jak się masz?", "example_sentence_en": "How are you?" }
+]
