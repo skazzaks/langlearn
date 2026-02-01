@@ -2,17 +2,28 @@ import db from "./db";
 import { generateAudio } from "./tts";
 import seedWords from "../../seed-words.json";
 
+interface SeedSentence {
+  difficulty: string;
+  sentence_pl: string;
+  sentence_en: string;
+}
+
 interface SeedWord {
   polish_word: string;
   english_word: string;
   pronunciation: string;
-  example_sentence_pl: string;
-  example_sentence_en: string;
+  notes: string;
+  sentences: SeedSentence[];
 }
 
 const insertCard = db.prepare(`
-  INSERT OR IGNORE INTO cards (polish_word, english_word, pronunciation, example_sentence_pl, example_sentence_en, audio_path)
-  VALUES (@polish_word, @english_word, @pronunciation, @example_sentence_pl, @example_sentence_en, @audio_path)
+  INSERT OR IGNORE INTO cards (polish_word, english_word, pronunciation, notes, audio_path)
+  VALUES (@polish_word, @english_word, @pronunciation, @notes, @audio_path)
+`);
+
+const insertSentence = db.prepare(`
+  INSERT INTO card_sentences (card_id, difficulty, sentence_pl, sentence_en)
+  VALUES (@card_id, @difficulty, @sentence_pl, @sentence_en)
 `);
 
 const insertReview = db.prepare(`
@@ -36,10 +47,25 @@ export async function seedCards() {
 
   let inserted = 0;
   for (const word of seedWords as SeedWord[]) {
-    const audioPath = await generateAudio(word.polish_word, word.example_sentence_pl);
-    const result = insertCard.run({ ...word, audio_path: audioPath });
+    const audioPath = await generateAudio(word.polish_word);
+    const result = insertCard.run({
+      polish_word: word.polish_word,
+      english_word: word.english_word,
+      pronunciation: word.pronunciation,
+      notes: word.notes,
+      audio_path: audioPath,
+    });
     if (result.changes > 0) {
-      insertReview.run(result.lastInsertRowid);
+      const cardId = result.lastInsertRowid;
+      for (const s of word.sentences) {
+        insertSentence.run({
+          card_id: cardId,
+          difficulty: s.difficulty,
+          sentence_pl: s.sentence_pl,
+          sentence_en: s.sentence_en,
+        });
+      }
+      insertReview.run(cardId);
       inserted++;
     }
   }

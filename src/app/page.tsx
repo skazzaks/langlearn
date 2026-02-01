@@ -4,15 +4,22 @@ import { useState, useEffect, useCallback } from "react";
 import Flashcard from "@/components/Flashcard";
 import ReviewButtons from "@/components/ReviewButtons";
 
+interface Sentence {
+  id: number;
+  difficulty: string;
+  sentence_pl: string;
+  sentence_en: string;
+  audio_path: string | null;
+}
+
 interface Card {
   id: number;
   polish_word: string;
   english_word: string;
   pronunciation: string;
-  example_sentence_pl: string;
-  example_sentence_en: string;
+  notes: string | null;
   audio_path: string;
-  sentence_audio_path: string;
+  sentences: Sentence[];
   next_review: string;
 }
 
@@ -79,10 +86,9 @@ export default function Home() {
             polishWord={card.polish_word}
             englishWord={card.english_word}
             pronunciation={card.pronunciation}
-            exampleSentencePl={card.example_sentence_pl}
-            exampleSentenceEn={card.example_sentence_en}
+            notes={card.notes}
+            sentences={card.sentences}
             audioPath={card.audio_path}
-            sentenceAudioPath={card.sentence_audio_path}
             nextReview={card.next_review}
             revealed={revealed}
             onReveal={() => setRevealed(true)}

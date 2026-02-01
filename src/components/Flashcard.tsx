@@ -2,37 +2,102 @@
 
 import { useRef, useState, useMemo } from "react";
 
+interface Sentence {
+  id: number;
+  difficulty: string;
+  sentence_pl: string;
+  sentence_en: string;
+  audio_path: string | null;
+}
+
 interface FlashcardProps {
   cardId: number;
   polishWord: string;
   englishWord: string;
   pronunciation: string;
-  exampleSentencePl: string;
-  exampleSentenceEn: string;
+  notes: string | null;
+  sentences: Sentence[];
   audioPath: string;
-  sentenceAudioPath?: string;
   nextReview: string;
   revealed: boolean;
   onReveal: () => void;
 }
 
+const difficultyConfig: Record<string, { label: string; color: string; dot: string }> = {
+  easy: { label: "Easy", color: "text-green-600", dot: "bg-green-500" },
+  medium: { label: "Medium", color: "text-yellow-600", dot: "bg-yellow-500" },
+  hard: { label: "Hard", color: "text-red-600", dot: "bg-red-500" },
+};
+
+function SentenceBlock({ sentence }: { sentence: Sentence }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [audioPath, setAudioPath] = useState(sentence.audio_path);
+  const [loading, setLoading] = useState(false);
+
+  const config = difficultyConfig[sentence.difficulty] || difficultyConfig.easy;
+
+  async function handlePlay(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (audioPath) {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play();
+      }
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/audio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sentenceId: sentence.id, sentence: sentence.sentence_pl }),
+      });
+      const data = await res.json();
+      if (data.sentenceAudioPath) {
+        setAudioPath(data.sentenceAudioPath);
+        const audio = new Audio(data.sentenceAudioPath);
+        audio.play();
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mb-3 last:mb-0">
+      <div className="flex items-center gap-2 mb-1">
+        <span className={`w-2 h-2 rounded-full ${config.dot}`} />
+        <span className={`text-xs font-semibold uppercase ${config.color}`}>{config.label}</span>
+      </div>
+      <p className="text-gray-700 italic">
+        {sentence.sentence_pl}
+        {audioPath && <audio ref={audioRef} src={audioPath} />}
+        <button
+          onClick={handlePlay}
+          disabled={loading}
+          className="inline-flex items-center ml-2 text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
+          title="Play sentence audio"
+        >
+          {loading ? "\u23F3" : "\uD83D\uDD0A"}
+        </button>
+      </p>
+      <p className="text-gray-500 text-sm mt-0.5">{sentence.sentence_en}</p>
+    </div>
+  );
+}
+
 export default function Flashcard({
-  cardId,
   polishWord,
   englishWord,
   pronunciation,
-  exampleSentencePl,
-  exampleSentenceEn,
+  notes,
+  sentences,
   audioPath,
-  sentenceAudioPath: initialSentenceAudioPath,
   nextReview,
   revealed,
   onReveal,
 }: FlashcardProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const sentenceAudioRef = useRef<HTMLAudioElement>(null);
-  const [sentenceAudioPath, setSentenceAudioPath] = useState(initialSentenceAudioPath);
-  const [loadingSentenceAudio, setLoadingSentenceAudio] = useState(false);
 
   const dueLabel = useMemo(() => {
     const normalized = nextReview.endsWith("Z") ? nextReview : nextReview.replace(" ", "T") + "Z";
@@ -84,52 +149,21 @@ export default function Flashcard({
         )}
 
         {revealed && (
-          <div className="mt-4 w-full border-t pt-4 text-center">
-            <p className="text-2xl font-semibold text-gray-800 mb-3">
+          <div className="mt-4 w-full border-t pt-4">
+            <p className="text-2xl font-semibold text-gray-800 mb-4 text-center">
               {englishWord}
             </p>
-            <div className="bg-gray-50 rounded-lg p-4 text-left">
-              <p className="text-gray-700 italic">
-                {exampleSentencePl}
-                {sentenceAudioPath && (
-                  <audio ref={sentenceAudioRef} src={sentenceAudioPath} />
-                )}
-                <button
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if (sentenceAudioPath) {
-                      if (sentenceAudioRef.current) {
-                        sentenceAudioRef.current.currentTime = 0;
-                        sentenceAudioRef.current.play();
-                      }
-                      return;
-                    }
-                    setLoadingSentenceAudio(true);
-                    try {
-                      const res = await fetch("/api/audio", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ cardId, sentence: exampleSentencePl }),
-                      });
-                      const data = await res.json();
-                      if (data.sentenceAudioPath) {
-                        setSentenceAudioPath(data.sentenceAudioPath);
-                        const audio = new Audio(data.sentenceAudioPath);
-                        audio.play();
-                      }
-                    } finally {
-                      setLoadingSentenceAudio(false);
-                    }
-                  }}
-                  disabled={loadingSentenceAudio}
-                  className="inline-flex items-center ml-2 text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
-                  title="Play sentence audio"
-                >
-                  {loadingSentenceAudio ? "⏳" : "🔊"}
-                </button>
-              </p>
-              <p className="text-gray-500 text-sm mt-1">{exampleSentenceEn}</p>
+            <div className="bg-gray-50 rounded-lg p-4">
+              {sentences.map((s) => (
+                <SentenceBlock key={s.id} sentence={s} />
+              ))}
             </div>
+            {notes && (
+              <div className="mt-4 bg-amber-50 rounded-lg p-4">
+                <p className="text-xs font-semibold text-amber-700 uppercase mb-1">{"\uD83D\uDCDD"} Notes</p>
+                <p className="text-sm text-amber-900">{notes}</p>
+              </div>
+            )}
           </div>
         )}
       </div>

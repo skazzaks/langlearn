@@ -1,12 +1,112 @@
 [
-  { "polish_word": "tak", "english_word": "yes", "pronunciation": "tahk", "example_sentence_pl": "Tak, chcę herbatę.", "example_sentence_en": "Yes, I want tea." },
-  { "polish_word": "nie", "english_word": "no / not", "pronunciation": "nyeh", "example_sentence_pl": "Nie mam czasu.", "example_sentence_en": "I don't have time." },
-  { "polish_word": "ja", "english_word": "I", "pronunciation": "yah", "example_sentence_pl": "Ja jestem studentem.", "example_sentence_en": "I am a student." },
-  { "polish_word": "to", "english_word": "this / it", "pronunciation": "toh", "example_sentence_pl": "To jest mój dom.", "example_sentence_en": "This is my house." },
-  { "polish_word": "jest", "english_word": "is", "pronunciation": "yest", "example_sentence_pl": "On jest wysoki.", "example_sentence_en": "He is tall." },
-  { "polish_word": "na", "english_word": "on / for", "pronunciation": "nah", "example_sentence_pl": "Książka jest na stole.", "example_sentence_en": "The book is on the table." },
-  { "polish_word": "się", "english_word": "oneself (reflexive)", "pronunciation": "shyeh", "example_sentence_pl": "Uczę się polskiego.", "example_sentence_en": "I am learning Polish." },
-  { "polish_word": "co", "english_word": "what", "pronunciation": "tsoh", "example_sentence_pl": "Co robisz?", "example_sentence_en": "What are you doing?" },
-  { "polish_word": "ten", "english_word": "this (masc.)", "pronunciation": "ten", "example_sentence_pl": "Ten dom jest duży.", "example_sentence_en": "This house is big." },
-  { "polish_word": "jak", "english_word": "how / like", "pronunciation": "yahk", "example_sentence_pl": "Jak się masz?", "example_sentence_en": "How are you?" }
+  {
+    "polish_word": "tak",
+    "english_word": "yes",
+    "pronunciation": "tahk",
+    "notes": "Affirmative particle. Can be doubled ('tak, tak') for emphasis. Also used as a filler word in conversation.",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "Tak, proszę.", "sentence_en": "Yes, please." },
+      { "difficulty": "medium", "sentence_pl": "Tak, chcę herbatę z mlekiem.", "sentence_en": "Yes, I want tea with milk." },
+      { "difficulty": "hard", "sentence_pl": "Tak naprawdę nie wiem, czy to dobry pomysł.", "sentence_en": "I don't really know if that's a good idea." }
+    ]
+  },
+  {
+    "polish_word": "nie",
+    "english_word": "no / not",
+    "pronunciation": "nyeh",
+    "notes": "Negation particle placed before verbs. 'Nie ma' = 'there isn't'. Double negation is standard in Polish: 'Nic nie wiem' (I don't know anything).",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "Nie, dziękuję.", "sentence_en": "No, thank you." },
+      { "difficulty": "medium", "sentence_pl": "Nie mam czasu na to.", "sentence_en": "I don't have time for that." },
+      { "difficulty": "hard", "sentence_pl": "Nie sądzę, żeby to było możliwe.", "sentence_en": "I don't think that would be possible." }
+    ]
+  },
+  {
+    "polish_word": "ja",
+    "english_word": "I",
+    "pronunciation": "yah",
+    "notes": "Personal pronoun, often omitted since verbs carry person info. Cases: mnie (gen/acc), mi/mnie (dat), mną (instr).",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "Ja mam kota.", "sentence_en": "I have a cat." },
+      { "difficulty": "medium", "sentence_pl": "Ja jestem studentem z Polski.", "sentence_en": "I am a student from Poland." },
+      { "difficulty": "hard", "sentence_pl": "Ja bym wolał zostać w domu, gdyby padał deszcz.", "sentence_en": "I would prefer to stay home if it were raining." }
+    ]
+  },
+  {
+    "polish_word": "to",
+    "english_word": "this / it",
+    "pronunciation": "toh",
+    "notes": "Demonstrative pronoun (neuter). 'To jest...' = 'This is...'. Also used as a conjunction meaning 'then' in conditional sentences.",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "To jest dom.", "sentence_en": "This is a house." },
+      { "difficulty": "medium", "sentence_pl": "To jest mój najlepszy przyjaciel.", "sentence_en": "This is my best friend." },
+      { "difficulty": "hard", "sentence_pl": "To, co mi powiedziałeś, zmieniło moje zdanie.", "sentence_en": "What you told me changed my mind." }
+    ]
+  },
+  {
+    "polish_word": "być",
+    "english_word": "to be",
+    "pronunciation": "bitch",
+    "notes": "Irregular verb. Present: jestem, jesteś, jest, jesteśmy, jesteście, są. Past forms vary by gender: byłem/byłam (I was, masc/fem).",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "On jest wysoki.", "sentence_en": "He is tall." },
+      { "difficulty": "medium", "sentence_pl": "Chcę być lepszym człowiekiem.", "sentence_en": "I want to be a better person." },
+      { "difficulty": "hard", "sentence_pl": "Gdybym był na twoim miejscu, nie zgodziłbym się.", "sentence_en": "If I were in your place, I wouldn't have agreed." }
+    ]
+  },
+  {
+    "polish_word": "na",
+    "english_word": "on / for",
+    "pronunciation": "nah",
+    "notes": "Preposition governing accusative (direction) or locative (location). 'Na stole' (on the table, locative), 'na stół' (onto the table, accusative).",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "Kot jest na stole.", "sentence_en": "The cat is on the table." },
+      { "difficulty": "medium", "sentence_pl": "Czekam na autobus od dziesięciu minut.", "sentence_en": "I've been waiting for the bus for ten minutes." },
+      { "difficulty": "hard", "sentence_pl": "Na pierwszy rzut oka wydaje się, że to proste zadanie.", "sentence_en": "At first glance, it seems like a simple task." }
+    ]
+  },
+  {
+    "polish_word": "się",
+    "english_word": "oneself (reflexive)",
+    "pronunciation": "shyeh",
+    "notes": "Reflexive pronoun, used with many verbs: uczyć się (to learn), bać się (to be afraid), cieszyć się (to be happy). Position is flexible in the sentence.",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "Uczę się polskiego.", "sentence_en": "I am learning Polish." },
+      { "difficulty": "medium", "sentence_pl": "Cieszę się, że cię widzę.", "sentence_en": "I'm happy to see you." },
+      { "difficulty": "hard", "sentence_pl": "Okazało się, że nie wszystko poszło zgodnie z planem.", "sentence_en": "It turned out that not everything went according to plan." }
+    ]
+  },
+  {
+    "polish_word": "co",
+    "english_word": "what",
+    "pronunciation": "tsoh",
+    "notes": "Interrogative pronoun. Also used as a relative pronoun: 'To, co chcę' (That which I want). Colloquially replaces 'który' (which).",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "Co to jest?", "sentence_en": "What is this?" },
+      { "difficulty": "medium", "sentence_pl": "Co robisz w weekend?", "sentence_en": "What are you doing on the weekend?" },
+      { "difficulty": "hard", "sentence_pl": "Co by było, gdybyś mógł cofnąć czas?", "sentence_en": "What would it be like if you could turn back time?" }
+    ]
+  },
+  {
+    "polish_word": "ten",
+    "english_word": "this (masc.)",
+    "pronunciation": "ten",
+    "notes": "Demonstrative pronoun, masculine form. Feminine: ta, Neuter: to, Plural: ci (masc. personal) / te (other). Declines through all 7 cases.",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "Ten dom jest duży.", "sentence_en": "This house is big." },
+      { "difficulty": "medium", "sentence_pl": "Ten film, który oglądaliśmy, był świetny.", "sentence_en": "That movie we watched was great." },
+      { "difficulty": "hard", "sentence_pl": "Ten sam problem pojawia się za każdym razem.", "sentence_en": "The same problem appears every time." }
+    ]
+  },
+  {
+    "polish_word": "jak",
+    "english_word": "how / like",
+    "pronunciation": "yahk",
+    "notes": "Interrogative adverb and conjunction. 'Jak się masz?' (How are you?). Also used for comparisons: 'biały jak śnieg' (white as snow).",
+    "sentences": [
+      { "difficulty": "easy", "sentence_pl": "Jak się masz?", "sentence_en": "How are you?" },
+      { "difficulty": "medium", "sentence_pl": "Jak dojść do dworca kolejowego?", "sentence_en": "How do I get to the train station?" },
+      { "difficulty": "hard", "sentence_pl": "Jak tylko skończę pracę, zadzwonię do ciebie.", "sentence_en": "As soon as I finish work, I'll call you." }
+    ]
+  }
 ]

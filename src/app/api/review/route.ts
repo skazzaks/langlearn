@@ -12,13 +12,12 @@ interface ReviewRow {
   last_reviewed: string | null;
 }
 
-interface CardWithReview {
+interface CardRow {
   id: number;
   polish_word: string;
   english_word: string;
   pronunciation: string;
-  example_sentence_pl: string;
-  example_sentence_en: string;
+  notes: string | null;
   audio_path: string;
   ease_factor: number;
   interval: number;
@@ -26,8 +25,22 @@ interface CardWithReview {
   next_review: string;
 }
 
+interface SentenceRow {
+  id: number;
+  difficulty: string;
+  sentence_pl: string;
+  sentence_en: string;
+  audio_path: string | null;
+}
+
+function getCardWithSentences(card: CardRow) {
+  const sentences = db.prepare(
+    "SELECT id, difficulty, sentence_pl, sentence_en, audio_path FROM card_sentences WHERE card_id = ? ORDER BY CASE difficulty WHEN 'easy' THEN 1 WHEN 'medium' THEN 2 WHEN 'hard' THEN 3 END"
+  ).all(card.id) as SentenceRow[];
+  return { ...card, sentences };
+}
+
 export async function GET() {
-  // Get next due card, or random if none due
   const dueCard = db.prepare(`
     SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.next_review
     FROM cards c
@@ -35,26 +48,25 @@ export async function GET() {
     WHERE r.next_review <= datetime('now')
     ORDER BY r.next_review ASC
     LIMIT 1
-  `).get() as CardWithReview | undefined;
+  `).get() as CardRow | undefined;
 
   if (dueCard) {
-    return NextResponse.json(dueCard);
+    return NextResponse.json(getCardWithSentences(dueCard));
   }
 
-  // No due cards — return random
   const randomCard = db.prepare(`
     SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.next_review
     FROM cards c
     JOIN reviews r ON r.card_id = c.id
     ORDER BY RANDOM()
     LIMIT 1
-  `).get() as CardWithReview | undefined;
+  `).get() as CardRow | undefined;
 
   if (!randomCard) {
     return NextResponse.json(null);
   }
 
-  return NextResponse.json(randomCard);
+  return NextResponse.json(getCardWithSentences(randomCard));
 }
 
 export async function POST(request: NextRequest) {

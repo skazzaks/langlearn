@@ -13,11 +13,19 @@ db.exec(`
     polish_word TEXT UNIQUE NOT NULL,
     english_word TEXT NOT NULL,
     pronunciation TEXT NOT NULL,
-    example_sentence_pl TEXT NOT NULL,
-    example_sentence_en TEXT NOT NULL,
+    notes TEXT,
     audio_path TEXT,
-    sentence_audio_path TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS card_sentences (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    card_id INTEGER NOT NULL,
+    difficulty TEXT NOT NULL,
+    sentence_pl TEXT NOT NULL,
+    sentence_en TEXT NOT NULL,
+    audio_path TEXT,
+    FOREIGN KEY (card_id) REFERENCES cards(id)
   );
 
   CREATE TABLE IF NOT EXISTS reviews (
