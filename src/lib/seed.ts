@@ -1,5 +1,5 @@
 import db from "./db";
-import { generateAudio, generateSentenceAudio } from "./tts";
+import { generateAudio } from "./tts";
 import seedWords from "../../seed-words.json";
 
 interface SeedWord {
@@ -11,8 +11,8 @@ interface SeedWord {
 }
 
 const insertCard = db.prepare(`
-  INSERT OR IGNORE INTO cards (polish_word, english_word, pronunciation, example_sentence_pl, example_sentence_en, audio_path, sentence_audio_path)
-  VALUES (@polish_word, @english_word, @pronunciation, @example_sentence_pl, @example_sentence_en, @audio_path, @sentence_audio_path)
+  INSERT OR IGNORE INTO cards (polish_word, english_word, pronunciation, example_sentence_pl, example_sentence_en, audio_path)
+  VALUES (@polish_word, @english_word, @pronunciation, @example_sentence_pl, @example_sentence_en, @audio_path)
 `);
 
 const insertReview = db.prepare(`
@@ -37,8 +37,7 @@ export async function seedCards() {
   let inserted = 0;
   for (const word of seedWords as SeedWord[]) {
     const audioPath = await generateAudio(word.polish_word, word.example_sentence_pl);
-    const sentenceAudioPath = await generateSentenceAudio(word.example_sentence_pl);
-    const result = insertCard.run({ ...word, audio_path: audioPath, sentence_audio_path: sentenceAudioPath });
+    const result = insertCard.run({ ...word, audio_path: audioPath });
     if (result.changes > 0) {
       insertReview.run(result.lastInsertRowid);
       inserted++;

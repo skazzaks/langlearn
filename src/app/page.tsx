@@ -13,6 +13,7 @@ interface Card {
   example_sentence_en: string;
   audio_path: string;
   sentence_audio_path: string;
+  next_review: string;
 }
 
 export default function Home() {
@@ -73,6 +74,8 @@ export default function Home() {
       ) : (
         <>
           <Flashcard
+            key={card.id}
+            cardId={card.id}
             polishWord={card.polish_word}
             englishWord={card.english_word}
             pronunciation={card.pronunciation}
@@ -80,6 +83,7 @@ export default function Home() {
             exampleSentenceEn={card.example_sentence_en}
             audioPath={card.audio_path}
             sentenceAudioPath={card.sentence_audio_path}
+            nextReview={card.next_review}
             revealed={revealed}
             onReveal={() => setRevealed(true)}
           />

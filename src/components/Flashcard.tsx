@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useMemo } from "react";
 
 interface FlashcardProps {
+  cardId: number;
   polishWord: string;
   englishWord: string;
   pronunciation: string;
@@ -10,23 +11,41 @@ interface FlashcardProps {
   exampleSentenceEn: string;
   audioPath: string;
   sentenceAudioPath?: string;
+  nextReview: string;
   revealed: boolean;
   onReveal: () => void;
 }
 
 export default function Flashcard({
+  cardId,
   polishWord,
   englishWord,
   pronunciation,
   exampleSentencePl,
   exampleSentenceEn,
   audioPath,
-  sentenceAudioPath,
+  sentenceAudioPath: initialSentenceAudioPath,
+  nextReview,
   revealed,
   onReveal,
 }: FlashcardProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const sentenceAudioRef = useRef<HTMLAudioElement>(null);
+  const [sentenceAudioPath, setSentenceAudioPath] = useState(initialSentenceAudioPath);
+  const [loadingSentenceAudio, setLoadingSentenceAudio] = useState(false);
+
+  const dueLabel = useMemo(() => {
+    const normalized = nextReview.endsWith("Z") ? nextReview : nextReview.replace(" ", "T") + "Z";
+    const due = new Date(normalized).getTime();
+    if (isNaN(due)) return "Due now";
+    const diffMs = due - Date.now();
+    if (diffMs <= 0) return "Due now";
+    const diffHours = diffMs / (1000 * 60 * 60);
+    if (diffHours < 1) return `Due in ${Math.ceil(diffHours * 60)}m`;
+    if (diffHours < 24) return `Due in ${Math.round(diffHours)}h`;
+    const diffDays = Math.round(diffHours / 24);
+    return `Due in ${diffDays}d`;
+  }, [nextReview]);
 
   function playAudio() {
     if (audioRef.current) {
@@ -42,7 +61,8 @@ export default function Flashcard({
         onClick={!revealed ? onReveal : undefined}
       >
         <p className="text-5xl font-bold text-gray-900 mb-3">{polishWord}</p>
-        <p className="text-lg text-gray-400 mb-4">{pronunciation}</p>
+        <p className="text-lg text-gray-400 mb-2">{pronunciation}</p>
+        <p className="text-xs text-gray-400 mb-4">{dueLabel}</p>
 
         {audioPath && (
           <>
@@ -72,23 +92,41 @@ export default function Flashcard({
               <p className="text-gray-700 italic">
                 {exampleSentencePl}
                 {sentenceAudioPath && (
-                  <>
-                    <audio ref={sentenceAudioRef} src={sentenceAudioPath} />
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (sentenceAudioRef.current) {
-                          sentenceAudioRef.current.currentTime = 0;
-                          sentenceAudioRef.current.play();
-                        }
-                      }}
-                      className="inline-flex items-center ml-2 text-blue-500 hover:text-blue-700 transition"
-                      title="Play sentence audio"
-                    >
-                      🔊
-                    </button>
-                  </>
+                  <audio ref={sentenceAudioRef} src={sentenceAudioPath} />
                 )}
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (sentenceAudioPath) {
+                      if (sentenceAudioRef.current) {
+                        sentenceAudioRef.current.currentTime = 0;
+                        sentenceAudioRef.current.play();
+                      }
+                      return;
+                    }
+                    setLoadingSentenceAudio(true);
+                    try {
+                      const res = await fetch("/api/audio", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ cardId, sentence: exampleSentencePl }),
+                      });
+                      const data = await res.json();
+                      if (data.sentenceAudioPath) {
+                        setSentenceAudioPath(data.sentenceAudioPath);
+                        const audio = new Audio(data.sentenceAudioPath);
+                        audio.play();
+                      }
+                    } finally {
+                      setLoadingSentenceAudio(false);
+                    }
+                  }}
+                  disabled={loadingSentenceAudio}
+                  className="inline-flex items-center ml-2 text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
+                  title="Play sentence audio"
+                >
+                  {loadingSentenceAudio ? "⏳" : "🔊"}
+                </button>
               </p>
               <p className="text-gray-500 text-sm mt-1">{exampleSentenceEn}</p>
             </div>
