@@ -46,7 +46,7 @@ export async function GET() {
     FROM cards c
     JOIN reviews r ON r.card_id = c.id
     WHERE r.next_review <= datetime('now')
-    ORDER BY r.next_review ASC
+    ORDER BY r.next_review ASC, RANDOM()
     LIMIT 1
   `).get() as CardRow | undefined;
 

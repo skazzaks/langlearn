@@ -1,0 +1,138 @@
+[
+  {
+    "sound_a": "sz",
+    "sound_b": "s",
+    "description": "sz (like English 'sh') vs s (like English 's')",
+    "words": [
+      { "polish_word": "szum", "english_word": "noise", "correct_sound": "a" },
+      { "polish_word": "sum", "english_word": "catfish (archaic)", "correct_sound": "b" },
+      { "polish_word": "koszyk", "english_word": "basket", "correct_sound": "a" },
+      { "polish_word": "kosik", "english_word": "little blackbird", "correct_sound": "b" },
+      { "polish_word": "szal", "english_word": "shawl", "correct_sound": "a" },
+      { "polish_word": "sal", "english_word": "halls (gen.)", "correct_sound": "b" },
+      { "polish_word": "kasz", "english_word": "groats (gen.)", "correct_sound": "a" },
+      { "polish_word": "kas", "english_word": "cash registers (gen.)", "correct_sound": "b" },
+      { "polish_word": "szok", "english_word": "shock", "correct_sound": "a" },
+      { "polish_word": "sok", "english_word": "juice", "correct_sound": "b" }
+    ]
+  },
+  {
+    "sound_a": "cz",
+    "sound_b": "c",
+    "description": "cz (like English 'ch') vs c (like 'ts')",
+    "words": [
+      { "polish_word": "czas", "english_word": "time", "correct_sound": "a" },
+      { "polish_word": "cas", "english_word": "(no meaning)", "correct_sound": "b" },
+      { "polish_word": "czar", "english_word": "charm", "correct_sound": "a" },
+      { "polish_word": "car", "english_word": "tsar", "correct_sound": "b" },
+      { "polish_word": "czyn", "english_word": "deed", "correct_sound": "a" },
+      { "polish_word": "cyn", "english_word": "tin", "correct_sound": "b" },
+      { "polish_word": "beczka", "english_word": "barrel", "correct_sound": "a" },
+      { "polish_word": "becka", "english_word": "(no meaning)", "correct_sound": "b" },
+      { "polish_word": "taczka", "english_word": "wheelbarrow", "correct_sound": "a" },
+      { "polish_word": "tacka", "english_word": "tray", "correct_sound": "b" }
+    ]
+  },
+  {
+    "sound_a": "\u017c",
+    "sound_b": "\u017a",
+    "description": "\u017c (voiced 'zh') vs \u017a (soft 'zh')",
+    "words": [
+      { "polish_word": "\u017cycie", "english_word": "life", "correct_sound": "a" },
+      { "polish_word": "\u017ar\u00f3d\u0142o", "english_word": "source", "correct_sound": "b" },
+      { "polish_word": "\u017caba", "english_word": "frog", "correct_sound": "a" },
+      { "polish_word": "\u017ale", "english_word": "badly", "correct_sound": "b" },
+      { "polish_word": "\u017co\u0142nierz", "english_word": "soldier", "correct_sound": "a" },
+      { "polish_word": "\u017arebak", "english_word": "foal", "correct_sound": "b" },
+      { "polish_word": "\u017car", "english_word": "heat/ember", "correct_sound": "a" },
+      { "polish_word": "ka\u017ady", "english_word": "every", "correct_sound": "a" },
+      { "polish_word": "p\u00f3\u017any", "english_word": "late", "correct_sound": "b" },
+      { "polish_word": "\u017cona", "english_word": "wife", "correct_sound": "a" }
+    ]
+  },
+  {
+    "sound_a": "sz",
+    "sound_b": "\u015b",
+    "description": "sz (hard 'sh') vs \u015b (soft 'sh')",
+    "words": [
+      { "polish_word": "szary", "english_word": "gray", "correct_sound": "a" },
+      { "polish_word": "\u015bwiat", "english_word": "world", "correct_sound": "b" },
+      { "polish_word": "szybko", "english_word": "fast", "correct_sound": "a" },
+      { "polish_word": "\u015bpi\u0105cy", "english_word": "sleeping", "correct_sound": "b" },
+      { "polish_word": "puszka", "english_word": "can/tin", "correct_sound": "a" },
+      { "polish_word": "pu\u015bcizna", "english_word": "legacy", "correct_sound": "b" },
+      { "polish_word": "szklanka", "english_word": "glass", "correct_sound": "a" },
+      { "polish_word": "\u015bliczny", "english_word": "lovely", "correct_sound": "b" },
+      { "polish_word": "muszla", "english_word": "shell", "correct_sound": "a" },
+      { "polish_word": "\u015bmia\u0142y", "english_word": "brave", "correct_sound": "b" }
+    ]
+  },
+  {
+    "sound_a": "cz",
+    "sound_b": "\u0107",
+    "description": "cz (hard 'ch') vs \u0107 (soft 'ch')",
+    "words": [
+      { "polish_word": "czekolada", "english_word": "chocolate", "correct_sound": "a" },
+      { "polish_word": "\u0107ma", "english_word": "moth", "correct_sound": "b" },
+      { "polish_word": "czapka", "english_word": "hat", "correct_sound": "a" },
+      { "polish_word": "\u0107wiczenie", "english_word": "exercise", "correct_sound": "b" },
+      { "polish_word": "rzecz", "english_word": "thing", "correct_sound": "a" },
+      { "polish_word": "pie\u0107", "english_word": "stove/oven", "correct_sound": "b" },
+      { "polish_word": "czysty", "english_word": "clean", "correct_sound": "a" },
+      { "polish_word": "ci\u0105g", "english_word": "sequence", "correct_sound": "b" },
+      { "polish_word": "oczy", "english_word": "eyes", "correct_sound": "a" },
+      { "polish_word": "no\u0107", "english_word": "night", "correct_sound": "b" }
+    ]
+  },
+  {
+    "sound_a": "\u0105",
+    "sound_b": "a",
+    "description": "\u0105 (nasal 'on') vs a (plain 'ah')",
+    "words": [
+      { "polish_word": "k\u0105t", "english_word": "angle", "correct_sound": "a" },
+      { "polish_word": "kat", "english_word": "executioner", "correct_sound": "b" },
+      { "polish_word": "d\u0105b", "english_word": "oak", "correct_sound": "a" },
+      { "polish_word": "dab", "english_word": "(no meaning)", "correct_sound": "b" },
+      { "polish_word": "w\u0105s", "english_word": "mustache", "correct_sound": "a" },
+      { "polish_word": "was", "english_word": "(no meaning)", "correct_sound": "b" },
+      { "polish_word": "m\u0105ka", "english_word": "flour", "correct_sound": "a" },
+      { "polish_word": "maka", "english_word": "(no meaning)", "correct_sound": "b" },
+      { "polish_word": "r\u0105k", "english_word": "hands (gen.)", "correct_sound": "a" },
+      { "polish_word": "rak", "english_word": "crayfish/cancer", "correct_sound": "b" }
+    ]
+  },
+  {
+    "sound_a": "\u0119",
+    "sound_b": "e",
+    "description": "\u0119 (nasal 'en') vs e (plain 'eh')",
+    "words": [
+      { "polish_word": "w\u0119ze\u0142", "english_word": "knot", "correct_sound": "a" },
+      { "polish_word": "wesel", "english_word": "weddings (gen.)", "correct_sound": "b" },
+      { "polish_word": "r\u0119ka", "english_word": "hand", "correct_sound": "a" },
+      { "polish_word": "rzeka", "english_word": "river", "correct_sound": "b" },
+      { "polish_word": "g\u0119sty", "english_word": "dense/thick", "correct_sound": "a" },
+      { "polish_word": "gesty", "english_word": "gestures", "correct_sound": "b" },
+      { "polish_word": "pi\u0119\u0107", "english_word": "five", "correct_sound": "a" },
+      { "polish_word": "piec", "english_word": "stove", "correct_sound": "b" },
+      { "polish_word": "z\u0119by", "english_word": "teeth", "correct_sound": "a" },
+      { "polish_word": "zeby", "english_word": "(no meaning)", "correct_sound": "b" }
+    ]
+  },
+  {
+    "sound_a": "l",
+    "sound_b": "\u0142",
+    "description": "l (soft, like English 'l') vs \u0142 (like English 'w')",
+    "words": [
+      { "polish_word": "laska", "english_word": "cane/stick", "correct_sound": "a" },
+      { "polish_word": "\u0142aska", "english_word": "grace/favor", "correct_sound": "b" },
+      { "polish_word": "pole", "english_word": "field", "correct_sound": "a" },
+      { "polish_word": "po\u0142e", "english_word": "(no meaning)", "correct_sound": "b" },
+      { "polish_word": "lata", "english_word": "years", "correct_sound": "a" },
+      { "polish_word": "\u0142ata", "english_word": "patch", "correct_sound": "b" },
+      { "polish_word": "lis", "english_word": "fox", "correct_sound": "a" },
+      { "polish_word": "\u0142is", "english_word": "(no meaning)", "correct_sound": "b" },
+      { "polish_word": "lu\u017any", "english_word": "loose", "correct_sound": "a" },
+      { "polish_word": "\u0142uk", "english_word": "bow/arch", "correct_sound": "b" }
+    ]
+  }
+]

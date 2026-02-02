@@ -34,7 +34,8 @@ export async function generateAudio(polishWord: string, exampleSentence?: string
         text: polishWord,
         model_id: "eleven_multilingual_v2",
         language_code: "pl",
-        previous_text: exampleSentence || "",
+        previous_text: "Proszę wymówić polskie słowo: ",
+        next_text: ". To jest polskie słowo.",
         voice_settings: { stability: 0.7, similarity_boost: 0.75, speed: 0.85 },
       }),
     }

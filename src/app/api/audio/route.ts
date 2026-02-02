@@ -3,7 +3,7 @@ import db from "@/lib/db";
 import { generateAudio, generateSentenceAudio } from "@/lib/tts";
 
 export async function POST(request: NextRequest) {
-  const { polishWord, sentenceId, sentence } = await request.json();
+  const { polishWord, sentenceId, sentence, minimalPairWordId } = await request.json();
 
   if (sentenceId && sentence) {
     const sentenceAudioPath = await generateSentenceAudio(sentence);
@@ -11,6 +11,14 @@ export async function POST(request: NextRequest) {
       db.prepare("UPDATE card_sentences SET audio_path = ? WHERE id = ?").run(sentenceAudioPath, sentenceId);
     }
     return NextResponse.json({ sentenceAudioPath });
+  }
+
+  if (minimalPairWordId && polishWord) {
+    const audioPath = await generateAudio(polishWord);
+    if (audioPath) {
+      db.prepare("UPDATE minimal_pair_words SET audio_path = ? WHERE id = ?").run(audioPath, minimalPairWordId);
+    }
+    return NextResponse.json({ audioPath });
   }
 
   const audioPath = await generateAudio(polishWord);
