@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Flashcard from "@/components/Flashcard";
+import type { FlashcardHandle } from "@/components/Flashcard";
 import ReviewButtons from "@/components/ReviewButtons";
 
 interface Sentence {
@@ -29,6 +30,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [seeded, setSeeded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const flashcardRef = useRef<FlashcardHandle>(null);
 
   const fetchNextCard = useCallback(async () => {
     setLoading(true);
@@ -38,6 +40,18 @@ export default function Home() {
     setCard(data);
     setLoading(false);
   }, []);
+
+  const handleRate = useCallback(async (quality: number) => {
+    if (!card) return;
+    setSubmitting(true);
+    await fetch("/api/review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cardId: card.id, quality }),
+    });
+    setSubmitting(false);
+    await fetchNextCard();
+  }, [card, fetchNextCard]);
 
   useEffect(() => {
     async function init() {
@@ -52,17 +66,24 @@ export default function Home() {
     init();
   }, [fetchNextCard]);
 
-  async function handleRate(quality: number) {
-    if (!card) return;
-    setSubmitting(true);
-    await fetch("/api/review", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cardId: card.id, quality }),
-    });
-    setSubmitting(false);
-    await fetchNextCard();
-  }
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && !revealed) {
+        setRevealed(true);
+      }
+      if (e.key === " ") {
+        e.preventDefault();
+        flashcardRef.current?.playAudio();
+      }
+      if (revealed && !submitting) {
+        if (e.key === "1") handleRate(5);
+        else if (e.key === "2") handleRate(3);
+        else if (e.key === "3") handleRate(0);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [revealed, submitting, handleRate]);
 
   if (loading && !seeded) {
     return (
@@ -79,6 +100,7 @@ export default function Home() {
       ) : (
         <>
           <Flashcard
+            ref={flashcardRef}
             key={card.id}
             cardId={card.id}
             polishWord={card.polish_word}

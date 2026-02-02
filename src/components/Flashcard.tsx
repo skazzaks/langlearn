@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useEffect, useImperativeHandle, forwardRef } from "react";
 
 interface Sentence {
   id: number;
@@ -86,7 +86,11 @@ function SentenceBlock({ sentence }: { sentence: Sentence }) {
   );
 }
 
-export default function Flashcard({
+export interface FlashcardHandle {
+  playAudio: () => void;
+}
+
+const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(function Flashcard({
   polishWord,
   englishWord,
   pronunciation,
@@ -96,7 +100,7 @@ export default function Flashcard({
   nextReview,
   revealed,
   onReveal,
-}: FlashcardProps) {
+}, ref) {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const dueLabel = useMemo(() => {
@@ -118,6 +122,14 @@ export default function Flashcard({
       audioRef.current.play();
     }
   }
+
+  useImperativeHandle(ref, () => ({ playAudio }));
+
+  useEffect(() => {
+    if (audioPath && audioRef.current) {
+      audioRef.current.play();
+    }
+  }, [audioPath]);
 
   return (
     <div className="w-full max-w-lg mx-auto">
@@ -169,4 +181,6 @@ export default function Flashcard({
       </div>
     </div>
   );
-}
+});
+
+export default Flashcard;
