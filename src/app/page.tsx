@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Flashcard from "@/components/Flashcard";
 import type { FlashcardHandle } from "@/components/Flashcard";
 import ReviewButtons from "@/components/ReviewButtons";
+import ProgressSidebar from "@/components/ProgressSidebar";
 
 interface Sentence {
   id: number;
@@ -32,14 +33,25 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false);
   const flashcardRef = useRef<FlashcardHandle>(null);
 
+  // Session stats
+  const [reviewedCount, setReviewedCount] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [totalRatings, setTotalRatings] = useState(0);
+  const [initialDue, setInitialDue] = useState<number | null>(null);
+  const [dueCount, setDueCount] = useState(0);
+
   const fetchNextCard = useCallback(async () => {
     setLoading(true);
     setRevealed(false);
     const res = await fetch("/api/review");
     const data = await res.json();
-    setCard(data);
+    setCard(data.card);
+    setDueCount(data.stats.dueCount);
+    if (initialDue === null && data.stats.dueCount > 0) {
+      setInitialDue(data.stats.dueCount);
+    }
     setLoading(false);
-  }, []);
+  }, [initialDue]);
 
   const handleRate = useCallback(async (quality: number) => {
     if (!card) return;
@@ -49,6 +61,9 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cardId: card.id, quality }),
     });
+    setReviewedCount((c) => c + 1);
+    setTotalRatings((c) => c + 1);
+    if (quality > 0) setCorrectCount((c) => c + 1);
     setSubmitting(false);
     await fetchNextCard();
   }, [card, fetchNextCard]);
@@ -85,6 +100,10 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [revealed, submitting, handleRate]);
 
+  const totalCards = initialDue !== null
+    ? Math.max(initialDue, reviewedCount + dueCount)
+    : reviewedCount + dueCount;
+
   if (loading && !seeded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -94,31 +113,39 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      {!card ? (
-        <p className="text-gray-500">No cards available. Seed the database first.</p>
-      ) : (
-        <>
-          <Flashcard
-            ref={flashcardRef}
-            key={card.id}
-            cardId={card.id}
-            polishWord={card.polish_word}
-            englishWord={card.english_word}
-            pronunciation={card.pronunciation}
-            notes={card.notes}
-            sentences={card.sentences}
-            audioPath={card.audio_path}
-            nextReview={card.next_review}
-            revealed={revealed}
-            onReveal={() => setRevealed(true)}
-          />
+    <div className="min-h-screen bg-gray-50 flex flex-row">
+      <ProgressSidebar
+        reviewedCount={reviewedCount}
+        totalCards={totalCards}
+        correctCount={correctCount}
+        totalRatings={totalRatings}
+      />
+      <div className="flex-1 flex flex-col items-center justify-center p-2">
+        {!card ? (
+          <p className="text-gray-500">No cards available. Seed the database first.</p>
+        ) : (
+          <>
+            <Flashcard
+              ref={flashcardRef}
+              key={card.id}
+              cardId={card.id}
+              polishWord={card.polish_word}
+              englishWord={card.english_word}
+              pronunciation={card.pronunciation}
+              notes={card.notes}
+              sentences={card.sentences}
+              audioPath={card.audio_path}
+              nextReview={card.next_review}
+              revealed={revealed}
+              onReveal={() => setRevealed(true)}
+            />
 
-          {revealed && (
-            <ReviewButtons onRate={handleRate} disabled={submitting} />
-          )}
-        </>
-      )}
+            {revealed && (
+              <ReviewButtons onRate={handleRate} disabled={submitting} />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

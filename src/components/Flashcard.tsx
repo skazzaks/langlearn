@@ -64,24 +64,24 @@ function SentenceBlock({ sentence }: { sentence: Sentence }) {
   }
 
   return (
-    <div className="mb-3 last:mb-0">
-      <div className="flex items-center gap-2 mb-1">
-        <span className={`w-2 h-2 rounded-full ${config.dot}`} />
-        <span className={`text-xs font-semibold uppercase ${config.color}`}>{config.label}</span>
+    <div className="mb-2 last:mb-0">
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+        <span className={`text-[10px] font-semibold uppercase ${config.color}`}>{config.label}</span>
       </div>
-      <p className="text-gray-700 italic">
+      <p className="text-sm text-gray-700 italic leading-snug">
         {sentence.sentence_pl}
         {audioPath && <audio ref={audioRef} src={audioPath} />}
         <button
           onClick={handlePlay}
           disabled={loading}
-          className="inline-flex items-center ml-2 text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
+          className="inline-flex items-center ml-1.5 text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
           title="Play sentence audio"
         >
           {loading ? "\u23F3" : "\uD83D\uDD0A"}
         </button>
       </p>
-      <p className="text-gray-500 text-sm mt-0.5">{sentence.sentence_en}</p>
+      <p className="text-gray-500 text-xs">{sentence.sentence_en}</p>
     </div>
   );
 }
@@ -127,19 +127,21 @@ const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(function Flashcard
 
   useEffect(() => {
     if (audioPath && audioRef.current) {
-      audioRef.current.play();
+      audioRef.current.play().catch(() => {
+        // Browser blocked autoplay — user will click Play manually
+      });
     }
   }, [audioPath]);
 
   return (
     <div className="w-full max-w-lg mx-auto">
       <div
-        className="bg-white rounded-2xl shadow-lg p-8 min-h-[320px] flex flex-col items-center justify-center cursor-pointer select-none"
+        className="bg-white rounded-xl shadow-lg p-5 flex flex-col items-center justify-center cursor-pointer select-none"
         onClick={!revealed ? onReveal : undefined}
       >
-        <p className="text-5xl font-bold text-gray-900 mb-3">{polishWord}</p>
-        <p className="text-lg text-gray-400 mb-2">{pronunciation}</p>
-        <p className="text-xs text-gray-400 mb-4">{dueLabel}</p>
+        <p className="text-3xl font-bold text-gray-900 mb-1">{polishWord}</p>
+        <p className="text-sm text-gray-400 mb-1">{pronunciation}</p>
+        <p className="text-[10px] text-gray-400 mb-2">{dueLabel}</p>
 
         {audioPath && (
           <>
@@ -149,7 +151,7 @@ const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(function Flashcard
                 e.stopPropagation();
                 playAudio();
               }}
-              className="mb-6 px-4 py-2 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition text-sm font-medium"
+              className="mb-3 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition text-xs font-medium"
             >
               &#9654; Play Audio
             </button>
@@ -157,23 +159,23 @@ const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(function Flashcard
         )}
 
         {!revealed && (
-          <p className="text-sm text-gray-400 mt-4">Tap to reveal</p>
+          <p className="text-xs text-gray-400 mt-2">Tap to reveal</p>
         )}
 
         {revealed && (
-          <div className="mt-4 w-full border-t pt-4">
-            <p className="text-2xl font-semibold text-gray-800 mb-4 text-center">
+          <div className="mt-3 w-full border-t pt-3">
+            <p className="text-lg font-semibold text-gray-800 mb-2 text-center">
               {englishWord}
             </p>
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-3">
               {sentences.map((s) => (
                 <SentenceBlock key={s.id} sentence={s} />
               ))}
             </div>
             {notes && (
-              <div className="mt-4 bg-amber-50 rounded-lg p-4">
-                <p className="text-xs font-semibold text-amber-700 uppercase mb-1">{"\uD83D\uDCDD"} Notes</p>
-                <p className="text-sm text-amber-900">{notes}</p>
+              <div className="mt-2 bg-amber-50 rounded-lg p-2.5">
+                <p className="text-[10px] font-semibold text-amber-700 uppercase mb-0.5">{"\uD83D\uDCDD"} Notes</p>
+                <p className="text-xs text-amber-900 leading-snug">{notes}</p>
               </div>
             )}
           </div>

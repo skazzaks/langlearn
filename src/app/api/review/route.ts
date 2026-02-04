@@ -41,6 +41,10 @@ function getCardWithSentences(card: CardRow) {
 }
 
 export async function GET() {
+  const dueCount = (db.prepare(
+    "SELECT COUNT(*) as count FROM reviews WHERE next_review <= datetime('now')"
+  ).get() as { count: number }).count;
+
   const dueCard = db.prepare(`
     SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.next_review
     FROM cards c
@@ -51,7 +55,7 @@ export async function GET() {
   `).get() as CardRow | undefined;
 
   if (dueCard) {
-    return NextResponse.json(getCardWithSentences(dueCard));
+    return NextResponse.json({ card: getCardWithSentences(dueCard), stats: { dueCount } });
   }
 
   const randomCard = db.prepare(`
@@ -63,10 +67,10 @@ export async function GET() {
   `).get() as CardRow | undefined;
 
   if (!randomCard) {
-    return NextResponse.json(null);
+    return NextResponse.json({ card: null, stats: { dueCount } });
   }
 
-  return NextResponse.json(getCardWithSentences(randomCard));
+  return NextResponse.json({ card: getCardWithSentences(randomCard), stats: { dueCount } });
 }
 
 export async function POST(request: NextRequest) {
