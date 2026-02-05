@@ -5,6 +5,7 @@ import Flashcard from "@/components/Flashcard";
 import type { FlashcardHandle } from "@/components/Flashcard";
 import ReviewButtons from "@/components/ReviewButtons";
 import ProgressSidebar from "@/components/ProgressSidebar";
+import Celebration from "@/components/Celebration";
 
 interface Sentence {
   id: number;
@@ -39,6 +40,8 @@ export default function Home() {
   const [totalRatings, setTotalRatings] = useState(0);
   const [initialDue, setInitialDue] = useState<number | null>(null);
   const [dueCount, setDueCount] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationShown, setCelebrationShown] = useState(false);
 
   const fetchNextCard = useCallback(async () => {
     setLoading(true);
@@ -104,6 +107,14 @@ export default function Home() {
     ? Math.max(initialDue, reviewedCount + dueCount)
     : reviewedCount + dueCount;
 
+  // Show celebration when all due cards are completed
+  useEffect(() => {
+    if (dueCount === 0 && reviewedCount > 0 && !celebrationShown && !loading) {
+      setShowCelebration(true);
+      setCelebrationShown(true);
+    }
+  }, [dueCount, reviewedCount, celebrationShown, loading]);
+
   if (loading && !seeded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -114,6 +125,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-row">
+      {showCelebration && (
+        <Celebration onDismiss={() => setShowCelebration(false)} />
+      )}
       <ProgressSidebar
         reviewedCount={reviewedCount}
         totalCards={totalCards}

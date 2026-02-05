@@ -15,14 +15,14 @@ export default function ProgressSidebar({
   const accuracy = totalRatings > 0 ? Math.round((correctCount / totalRatings) * 100) : 0;
 
   return (
-    <div className="hidden lg:flex flex-col items-center w-14 shrink-0 py-4 select-none">
+    <div className="hidden lg:flex flex-col items-center justify-center w-14 shrink-0 py-4 select-none">
       {/* Vertical progress track */}
-      <div className="relative w-6 flex-1 min-h-[120px] flex flex-col items-center">
+      <div className="relative w-6 flex flex-col items-center">
         {/* Finish line at top */}
         <div className="text-sm mb-1">🥕</div>
 
-        {/* Track */}
-        <div className="relative flex-1 w-1.5 bg-gray-200 rounded-full overflow-visible">
+        {/* Track - fixed height */}
+        <div className="relative h-72 w-1.5 bg-gray-200 rounded-full overflow-visible">
           {/* Rabbit - moves from bottom to top */}
           <div
             className="absolute left-1/2 -translate-x-1/2 text-base transition-all duration-500 ease-out"
@@ -34,7 +34,7 @@ export default function ProgressSidebar({
       </div>
 
       {/* Stats */}
-      <div className="mt-2 text-center space-y-0.5">
+      <div className="mt-3 text-center space-y-0.5">
         <div className="text-[10px] text-gray-500 font-medium">
           {reviewedCount} / {totalCards}
         </div>
