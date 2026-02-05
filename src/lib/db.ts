@@ -86,6 +86,28 @@ db.exec(`
     last_reviewed DATETIME,
     FOREIGN KEY (word_id) REFERENCES minimal_pair_words(id)
   );
+
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
+
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('new_cards_per_day', '20');
+`);
+
+// Add first_reviewed_at column if it doesn't exist
+try {
+  db.exec(`ALTER TABLE reviews ADD COLUMN first_reviewed_at DATETIME`);
+} catch {
+  // Column already exists
+}
+
+// Backfill first_reviewed_at for cards reviewed before the migration
+db.exec(`
+  UPDATE reviews
+  SET first_reviewed_at = COALESCE(last_reviewed, next_review)
+  WHERE first_reviewed_at IS NULL
+    AND (last_reviewed IS NOT NULL OR repetitions > 0)
 `);
 
 export default db;

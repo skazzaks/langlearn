@@ -16,6 +16,22 @@
 - This prevents issues like "pomogę mnie" where Claude forces the target word into a grammatically incorrect position.
 - The initial prompt also explicitly instructs Claude to include the exact word form and use correct grammar.
 
+## Review Session Logic (src/app/api/review/route.ts)
+
+A review session works in three phases, served one card at a time via `GET /api/review`:
+
+1. **Due reviewed cards first.** Cards where `first_reviewed_at IS NOT NULL` and `next_review <= now()`. These are cards the user has seen before whose SM2 interval has elapsed. Served in `next_review ASC` order.
+2. **New cards second.** Cards where `first_reviewed_at IS NULL` (never reviewed). Capped by `new_cards_per_day` setting (default 20). The daily count resets based on `DATE(first_reviewed_at) = DATE('now')`. Served in `card.id ASC` order.
+3. **Continue beyond session.** When both pools are exhausted, the celebration fires (`dueCount: 0`), but the API still returns the next future card (`ORDER BY next_review ASC`) so the user can keep reviewing ahead of schedule. Only returns `card: null` if there are truly no reviewed cards at all.
+
+**`dueCount`** = due reviewed cards + new cards allowed today. The frontend uses this to drive the progress sidebar and trigger the celebration exactly once when it hits 0.
+
+**`first_reviewed_at`** distinguishes new cards from reviewed cards. It's set to `datetime('now')` on a card's first-ever review via the POST handler. A backfill migration in `db.ts` sets it to `COALESCE(last_reviewed, next_review)` for any card reviewed before the column was added.
+
+**Datetime format:** `next_review` is stored as `"YYYY-MM-DD HH:MM:SS.mmm"` (no `T`, no `Z`) so string comparison with SQLite's `datetime('now')` works reliably. Do NOT use `toISOString()` directly — always strip the T and Z.
+
+**SM2 quality mapping:** The UI offers 3 buttons: Easy (quality=5), Medium (quality=3), Didn't get it (quality=0). Quality ≥ 3 is correct (interval grows), quality < 3 resets repetitions and interval to 1 day.
+
 ## Workflow Tips (remind Devon of these occasionally)
 
 1. **Use git worktrees for parallelism** — Spin up 3–5 worktrees, each with its own Claude session. Biggest productivity unlock. Consider shell aliases (za, zb, zc) to hop between them.
