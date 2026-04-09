@@ -3,6 +3,8 @@ interface ProgressSidebarProps {
   totalCards: number;
   correctCount: number;
   totalRatings: number;
+  newCardsDue: number;
+  reviewCardsDue: number;
 }
 
 export default function ProgressSidebar({
@@ -10,6 +12,8 @@ export default function ProgressSidebar({
   totalCards,
   correctCount,
   totalRatings,
+  newCardsDue,
+  reviewCardsDue,
 }: ProgressSidebarProps) {
   const progress = totalCards > 0 ? Math.min(reviewedCount / totalCards, 1) : 0;
   const accuracy = totalRatings > 0 ? Math.round((correctCount / totalRatings) * 100) : 0;
@@ -47,6 +51,14 @@ export default function ProgressSidebar({
             <div className="text-[9px] text-gray-400">accuracy</div>
           </>
         )}
+        <div className="text-[10px] text-gray-500 font-medium mt-1">
+          {newCardsDue}
+        </div>
+        <div className="text-[9px] text-gray-400">new</div>
+        <div className="text-[10px] text-gray-500 font-medium mt-1">
+          {reviewCardsDue}
+        </div>
+        <div className="text-[9px] text-gray-400">review</div>
       </div>
     </div>
   );

@@ -30,6 +30,7 @@ function createTestDb() {
       ease_factor REAL DEFAULT 2.5,
       interval INTEGER DEFAULT 0,
       repetitions INTEGER DEFAULT 0,
+      review_count INTEGER DEFAULT 0,
       next_review DATETIME DEFAULT CURRENT_TIMESTAMP,
       last_reviewed DATETIME,
       first_reviewed_at DATETIME,
@@ -84,7 +85,7 @@ function getNextCard(db: ReturnType<typeof createTestDb>) {
   ).get() as { count: number }).count;
 
   const dueReviewedCount = (db.prepare(
-    "SELECT COUNT(*) as count FROM reviews WHERE first_reviewed_at IS NOT NULL AND next_review <= datetime('now')"
+    "SELECT COUNT(*) as count FROM reviews WHERE first_reviewed_at IS NOT NULL AND datetime(replace(replace(next_review,'T',' '),'Z','')) <= datetime('now')"
   ).get() as { count: number }).count;
 
   const availableNewCards = (db.prepare(
@@ -99,8 +100,8 @@ function getNextCard(db: ReturnType<typeof createTestDb>) {
   const dueReviewedCard = db.prepare(`
     SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.next_review
     FROM cards c JOIN reviews r ON r.card_id = c.id
-    WHERE r.first_reviewed_at IS NOT NULL AND r.next_review <= datetime('now')
-    ORDER BY r.next_review ASC
+    WHERE r.first_reviewed_at IS NOT NULL AND datetime(replace(replace(r.next_review,'T',' '),'Z','')) <= datetime('now')
+    ORDER BY datetime(replace(replace(r.next_review,'T',' '),'Z','')) ASC
     LIMIT 1
   `).get() as { id: number; polish_word: string } | undefined;
 
@@ -124,7 +125,7 @@ function getNextCard(db: ReturnType<typeof createTestDb>) {
     SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.next_review
     FROM cards c JOIN reviews r ON r.card_id = c.id
     WHERE r.first_reviewed_at IS NOT NULL
-    ORDER BY r.next_review ASC
+    ORDER BY datetime(replace(replace(r.next_review,'T',' '),'Z','')) ASC
     LIMIT 1
   `).get() as { id: number; polish_word: string } | undefined;
 
@@ -170,6 +171,22 @@ describe("review session logic", () => {
       }
       const result = getNextCard(db);
       expect(result.dueCount).toBe(3);
+    });
+
+    it("treats ISO next_review on same day as due", () => {
+      const dueId = insertCard(db, "iso");
+      const pastIso = new Date(Date.now() - 60 * 1000)
+        .toISOString();
+      insertReview(db, dueId, {
+        nextReview: pastIso,
+        firstReviewedAt: "2025-01-01 00:00:00",
+        repetitions: 1,
+      });
+
+      const result = getNextCard(db);
+      expect(result.phase).toBe("due");
+      expect(result.dueCount).toBe(1);
+      expect(result.card?.polish_word).toBe("iso");
     });
   });
 
@@ -263,6 +280,24 @@ describe("review session logic", () => {
       const result = getNextCard(db);
       expect(result.phase).toBe("empty");
       expect(result.card).toBeNull();
+    });
+
+    it("does not serve new cards when daily limit is 0", () => {
+      db.prepare("UPDATE settings SET value = '0' WHERE key = 'new_cards_per_day'").run();
+
+      const newId = insertCard(db, "nowy");
+      insertReview(db, newId); // first_reviewed_at = NULL
+
+      const reviewedId = insertCard(db, "przyszly");
+      insertReview(db, reviewedId, {
+        nextReview: "2099-06-01 00:00:00",
+        firstReviewedAt: "2025-01-01 00:00:00",
+        repetitions: 2,
+      });
+
+      const result = getNextCard(db);
+      expect(result.phase).toBe("continue");
+      expect(result.card?.polish_word).toBe("przyszly");
     });
   });
 

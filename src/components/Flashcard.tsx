@@ -19,6 +19,10 @@ interface FlashcardProps {
   sentences: Sentence[];
   audioPath: string;
   nextReview: string;
+  reviewCount: number;
+  lastReviewed: string | null;
+  isDue?: boolean;
+  isNew?: boolean;
   revealed: boolean;
   onReveal: () => void;
 }
@@ -86,6 +90,47 @@ function SentenceBlock({ sentence }: { sentence: Sentence }) {
   );
 }
 
+function parseReviewDate(value: string | null): number | null {
+  if (!value) return null;
+  const cleaned = value.replace("T", " ").replace("Z", "");
+  const iso = cleaned.includes(" ")
+    ? `${cleaned.replace(" ", "T")}Z`
+    : `${cleaned}Z`;
+  const ts = Date.parse(iso);
+  return Number.isNaN(ts) ? null : ts;
+}
+
+function formatRelativeReview(value: string | null): string {
+  const ts = parseReviewDate(value);
+  if (!ts) return "Never reviewed";
+  const diffMs = Date.now() - ts;
+  if (diffMs <= 0) return "Just now";
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  const week = 7 * day;
+  const month = 30 * day;
+
+  if (diffMs < hour) {
+    const mins = Math.max(1, Math.round(diffMs / minute));
+    return `${mins}m ago`;
+  }
+  if (diffMs < day) {
+    const hours = Math.max(1, Math.round(diffMs / hour));
+    return `${hours}h ago`;
+  }
+  if (diffMs < week) {
+    const days = Math.max(1, Math.round(diffMs / day));
+    return `${days}d ago`;
+  }
+  if (diffMs < month) {
+    const weeks = Math.max(1, Math.round(diffMs / week));
+    return `${weeks}w ago`;
+  }
+  const months = Math.max(1, Math.round(diffMs / month));
+  return `${months}mo ago`;
+}
+
 export interface FlashcardHandle {
   playAudio: () => void;
 }
@@ -98,15 +143,23 @@ const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(function Flashcard
   sentences,
   audioPath,
   nextReview,
+  reviewCount,
+  lastReviewed,
+  isDue,
+  isNew,
   revealed,
   onReveal,
 }, ref) {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const dueLabel = useMemo(() => {
-    const normalized = nextReview.endsWith("Z") ? nextReview : nextReview.replace(" ", "T") + "Z";
+    if (isNew) return "New card";
+    if (isDue === true) return "Due now";
+    const normalized = nextReview.endsWith("Z")
+      ? nextReview
+      : nextReview.replace(" ", "T") + "Z";
     const due = new Date(normalized).getTime();
-    if (isNaN(due)) return "Due now";
+    if (isNaN(due)) return "Scheduled";
     const diffMs = due - Date.now();
     if (diffMs <= 0) return "Due now";
     const diffHours = diffMs / (1000 * 60 * 60);
@@ -114,7 +167,13 @@ const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(function Flashcard
     if (diffHours < 24) return `Due in ${Math.round(diffHours)}h`;
     const diffDays = Math.round(diffHours / 24);
     return `Due in ${diffDays}d`;
-  }, [nextReview]);
+  }, [nextReview, isDue, isNew]);
+
+  const reviewSummary = useMemo(() => {
+    const times = Number.isFinite(reviewCount) ? reviewCount : 0;
+    const suffix = times === 1 ? "time" : "times";
+    return `Reviewed ${times} ${suffix} · ${formatRelativeReview(lastReviewed)}`;
+  }, [reviewCount, lastReviewed]);
 
   function playAudio() {
     if (audioRef.current) {
@@ -136,12 +195,13 @@ const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(function Flashcard
   return (
     <div className="w-full max-w-lg mx-auto">
       <div
-        className="bg-white rounded-xl shadow-lg p-5 flex flex-col items-center justify-center cursor-pointer select-none"
+        className={`bg-white rounded-xl shadow-lg p-5 flex flex-col items-center justify-center ${!revealed ? "cursor-pointer select-none" : ""}`}
         onClick={!revealed ? onReveal : undefined}
       >
         <p className="text-3xl font-bold text-gray-900 mb-1">{polishWord}</p>
         <p className="text-sm text-gray-400 mb-1">{pronunciation}</p>
         <p className="text-[10px] text-gray-400 mb-2">{dueLabel}</p>
+        <p className="text-[10px] text-gray-400 mb-3">{reviewSummary}</p>
 
         {audioPath && (
           <>

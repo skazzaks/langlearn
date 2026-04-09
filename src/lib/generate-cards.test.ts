@@ -76,6 +76,7 @@ vi.mock("./db", async () => {
       ease_factor REAL DEFAULT 2.5,
       interval INTEGER DEFAULT 0,
       repetitions INTEGER DEFAULT 0,
+      review_count INTEGER DEFAULT 0,
       next_review DATETIME DEFAULT CURRENT_TIMESTAMP,
       last_reviewed DATETIME,
       FOREIGN KEY (card_id) REFERENCES cards(id)

@@ -34,6 +34,7 @@ db.exec(`
     ease_factor REAL DEFAULT 2.5,
     interval INTEGER DEFAULT 0,
     repetitions INTEGER DEFAULT 0,
+    review_count INTEGER DEFAULT 0,
     next_review DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_reviewed DATETIME,
     FOREIGN KEY (card_id) REFERENCES cards(id)
@@ -93,11 +94,102 @@ db.exec(`
   );
 
   INSERT OR IGNORE INTO settings (key, value) VALUES ('new_cards_per_day', '20');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('reading_themes', '["culture","geography","history","dialog","story","news"]');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('grammar_new_cards_per_day', '5');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('strict_writing_rules', 'false');
+
+  CREATE TABLE IF NOT EXISTS grammar_cards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    case_name TEXT NOT NULL,
+    usage TEXT NOT NULL,
+    modifier TEXT NOT NULL,
+    gender TEXT NOT NULL,
+    number TEXT NOT NULL CHECK(number IN ('singular', 'plural')),
+    display_title TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS grammar_reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    grammar_card_id INTEGER NOT NULL UNIQUE,
+    ease_factor REAL DEFAULT 2.5,
+    interval INTEGER DEFAULT 0,
+    repetitions INTEGER DEFAULT 0,
+    next_review DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_reviewed DATETIME,
+    first_reviewed_at DATETIME,
+    FOREIGN KEY (grammar_card_id) REFERENCES grammar_cards(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS grammar_nouns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    polish_word TEXT NOT NULL,
+    english_word TEXT NOT NULL,
+    gender TEXT NOT NULL CHECK(gender IN ('masc_pers','masc_anim','masc_inan','fem','neut'))
+  );
+
+  CREATE TABLE IF NOT EXISTS reading_stories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    theme_key TEXT NOT NULL,
+    themes TEXT NOT NULL,
+    content_pl TEXT NOT NULL,
+    questions_pl TEXT NOT NULL,
+    used_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS reading_story_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    story_id INTEGER NOT NULL,
+    token TEXT NOT NULL,
+    FOREIGN KEY (story_id) REFERENCES reading_stories(id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_reading_story_tokens_token ON reading_story_tokens(token);
+
+  CREATE TABLE IF NOT EXISTS reading_definitions_cache (
+    token TEXT PRIMARY KEY,
+    definition_en TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS reading_news_cache (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    summary TEXT NOT NULL,
+    updated_at DATETIME NOT NULL
+  );
 `);
+
+// Add columns for existing reading_stories table if needed
+try {
+  db.exec(`ALTER TABLE reading_stories ADD COLUMN theme_key TEXT`);
+} catch {
+  // Column already exists
+}
+
+try {
+  db.exec(`ALTER TABLE reading_stories ADD COLUMN used_at DATETIME`);
+} catch {
+  // Column already exists
+}
 
 // Add first_reviewed_at column if it doesn't exist
 try {
   db.exec(`ALTER TABLE reviews ADD COLUMN first_reviewed_at DATETIME`);
+} catch {
+  // Column already exists
+}
+
+// Add review_count column if it doesn't exist
+try {
+  db.exec(`ALTER TABLE reviews ADD COLUMN review_count INTEGER DEFAULT 0`);
+} catch {
+  // Column already exists
+}
+
+// Add priority column for manually-added cards
+try {
+  db.exec(`ALTER TABLE reviews ADD COLUMN priority INTEGER DEFAULT 0`);
 } catch {
   // Column already exists
 }
@@ -108,6 +200,18 @@ db.exec(`
   SET first_reviewed_at = COALESCE(last_reviewed, next_review)
   WHERE first_reviewed_at IS NULL
     AND (last_reviewed IS NOT NULL OR repetitions > 0)
+`);
+
+// Backfill review_count for existing rows (best-effort)
+db.exec(`
+  UPDATE reviews
+  SET review_count = CASE
+    WHEN review_count IS NULL THEN CASE
+      WHEN last_reviewed IS NOT NULL OR repetitions > 0 THEN 1
+      ELSE 0
+    END
+    ELSE review_count
+  END
 `);
 
 export default db;

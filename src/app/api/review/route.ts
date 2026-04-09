@@ -8,6 +8,7 @@ interface ReviewRow {
   ease_factor: number;
   interval: number;
   repetitions: number;
+  review_count: number;
   next_review: string;
   last_reviewed: string | null;
 }
@@ -22,7 +23,10 @@ interface CardRow {
   ease_factor: number;
   interval: number;
   repetitions: number;
+  review_count: number;
   next_review: string;
+  last_reviewed: string | null;
+  first_reviewed_at: string | null;
 }
 
 interface SentenceRow {
@@ -40,11 +44,37 @@ function getCardWithSentences(card: CardRow) {
   return { ...card, sentences };
 }
 
+function normalizeNextReview(nextReview: string): number | null {
+  if (!nextReview) return null;
+  const cleaned = nextReview.replace("T", " ").replace("Z", "");
+  const iso = cleaned.includes(" ")
+    ? `${cleaned.replace(" ", "T")}Z`
+    : `${cleaned}Z`;
+  const ts = Date.parse(iso);
+  return Number.isNaN(ts) ? null : ts;
+}
+
+function computeIsDue(nextReview: string): boolean {
+  const ts = normalizeNextReview(nextReview);
+  if (ts === null) return false;
+  return ts <= Date.now();
+}
+
 export async function GET() {
   // Get settings
   const newCardsPerDay = Number(
     (db.prepare("SELECT value FROM settings WHERE key = 'new_cards_per_day'").get() as { value: string } | undefined)?.value ?? "20"
   );
+
+  // Check for bonus cards added today
+  const bonusDate = (db.prepare("SELECT value FROM settings WHERE key = 'vocab_bonus_cards_date'").get() as { value: string } | undefined)?.value;
+  const todayStr = new Date().toISOString().split("T")[0];
+  const bonusCards = bonusDate === todayStr
+    ? Number((db.prepare("SELECT value FROM settings WHERE key = 'vocab_bonus_cards_count'").get() as { value: string } | undefined)?.value ?? "0")
+    : 0;
+
+  // Effective daily limit = base + bonus
+  const effectiveLimit = newCardsPerDay + bonusCards;
 
   // Count new cards introduced today (first_reviewed_at is today)
   const newCardsToday = (db.prepare(
@@ -53,7 +83,7 @@ export async function GET() {
 
   // Count due reviewed cards (cards that have been seen before and are due)
   const dueReviewedCount = (db.prepare(
-    "SELECT COUNT(*) as count FROM reviews WHERE first_reviewed_at IS NOT NULL AND next_review <= datetime('now')"
+    "SELECT COUNT(*) as count FROM reviews WHERE first_reviewed_at IS NOT NULL AND datetime(replace(replace(next_review,'T',' '),'Z','')) <= datetime('now')"
   ).get() as { count: number }).count;
 
   // Count available new cards (never reviewed)
@@ -62,7 +92,7 @@ export async function GET() {
   ).get() as { count: number }).count;
 
   // Calculate how many new cards we can still show today
-  const newCardsRemaining = Math.max(0, newCardsPerDay - newCardsToday);
+  const newCardsRemaining = Math.max(0, effectiveLimit - newCardsToday);
   const newCardsDueToday = Math.min(newCardsRemaining, availableNewCards);
 
   // Total due = reviewed cards due + new cards allowed today
@@ -70,49 +100,56 @@ export async function GET() {
 
   // First, try to get a due reviewed card (priority to cards user has seen before)
   const dueReviewedCard = db.prepare(`
-    SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.next_review
+    SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.review_count, r.next_review, r.last_reviewed, r.first_reviewed_at
     FROM cards c
     JOIN reviews r ON r.card_id = c.id
-    WHERE r.first_reviewed_at IS NOT NULL AND r.next_review <= datetime('now')
-    ORDER BY r.next_review ASC, RANDOM()
+    WHERE r.first_reviewed_at IS NOT NULL AND datetime(replace(replace(r.next_review,'T',' '),'Z','')) <= datetime('now')
+    ORDER BY datetime(replace(replace(r.next_review,'T',' '),'Z','')) ASC, RANDOM()
     LIMIT 1
   `).get() as CardRow | undefined;
 
   if (dueReviewedCard) {
-    return NextResponse.json({ card: getCardWithSentences(dueReviewedCard), stats: { dueCount } });
+    const isDue = computeIsDue(dueReviewedCard.next_review);
+    const card = { ...getCardWithSentences(dueReviewedCard), is_due: isDue, is_new: false };
+    return NextResponse.json({ card, stats: { dueCount: Math.max(dueCount, isDue ? 1 : 0), newCardsDue: newCardsDueToday, reviewCardsDue: Math.max(dueReviewedCount, isDue ? 1 : 0), availableNewCards, newCardsPerDay } });
   }
 
   // If no reviewed cards due, show a new card (if we haven't hit the daily limit)
   if (newCardsRemaining > 0) {
     const newCard = db.prepare(`
-      SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.next_review
+      SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.review_count, r.next_review, r.last_reviewed, r.first_reviewed_at
       FROM cards c
       JOIN reviews r ON r.card_id = c.id
       WHERE r.first_reviewed_at IS NULL
-      ORDER BY c.id ASC
+      ORDER BY COALESCE(r.priority, 0) DESC, c.id ASC
       LIMIT 1
     `).get() as CardRow | undefined;
 
     if (newCard) {
-      return NextResponse.json({ card: getCardWithSentences(newCard), stats: { dueCount } });
+      const isDue = computeIsDue(newCard.next_review);
+      const card = { ...getCardWithSentences(newCard), is_due: isDue, is_new: true };
+      return NextResponse.json({ card, stats: { dueCount: Math.max(dueCount, 1), newCardsDue: Math.max(newCardsDueToday, 1), reviewCardsDue: dueReviewedCount, availableNewCards, newCardsPerDay } });
     }
   }
 
-  // No cards due — offer the next future card so user can keep reviewing
+  // Phase 3: Continue beyond session — fall back to next future reviewed card
   const nextFutureCard = db.prepare(`
-    SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.next_review
+    SELECT c.*, r.ease_factor, r.interval, r.repetitions, r.review_count, r.next_review, r.last_reviewed, r.first_reviewed_at
     FROM cards c
     JOIN reviews r ON r.card_id = c.id
     WHERE r.first_reviewed_at IS NOT NULL
-    ORDER BY r.next_review ASC
+    ORDER BY datetime(replace(replace(r.next_review,'T',' '),'Z','')) ASC
     LIMIT 1
   `).get() as CardRow | undefined;
 
   if (nextFutureCard) {
-    return NextResponse.json({ card: getCardWithSentences(nextFutureCard), stats: { dueCount: 0 } });
+    const isDue = computeIsDue(nextFutureCard.next_review);
+    const card = { ...getCardWithSentences(nextFutureCard), is_due: isDue, is_new: false };
+    const adjustedDueCount = isDue ? 1 : 0;
+    return NextResponse.json({ card, stats: { dueCount: adjustedDueCount, newCardsDue: 0, reviewCardsDue: isDue ? 1 : 0, availableNewCards, newCardsPerDay } });
   }
 
-  return NextResponse.json({ card: null, stats: { dueCount: 0 } });
+  return NextResponse.json({ card: null, stats: { dueCount: 0, newCardsDue: 0, reviewCardsDue: 0, availableNewCards, newCardsPerDay } });
 }
 
 interface ReviewRowWithFirst extends ReviewRow {
@@ -142,13 +179,13 @@ export async function POST(request: NextRequest) {
   if (review.first_reviewed_at === null) {
     db.prepare(`
       UPDATE reviews
-      SET ease_factor = ?, interval = ?, repetitions = ?, next_review = ?, last_reviewed = datetime('now'), first_reviewed_at = datetime('now')
+      SET ease_factor = ?, interval = ?, repetitions = ?, review_count = COALESCE(review_count, 0) + 1, next_review = ?, last_reviewed = datetime('now'), first_reviewed_at = datetime('now')
       WHERE card_id = ?
     `).run(result.easeFactor, result.interval, result.repetitions, nextReviewStr, cardId);
   } else {
     db.prepare(`
       UPDATE reviews
-      SET ease_factor = ?, interval = ?, repetitions = ?, next_review = ?, last_reviewed = datetime('now')
+      SET ease_factor = ?, interval = ?, repetitions = ?, review_count = COALESCE(review_count, 0) + 1, next_review = ?, last_reviewed = datetime('now')
       WHERE card_id = ?
     `).run(result.easeFactor, result.interval, result.repetitions, nextReviewStr, cardId);
   }

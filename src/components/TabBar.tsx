@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 
 const tabs = [
   { href: "/", label: "Vocabulary" },
+  { href: "/reading", label: "Reading" },
   { href: "/minimal-pairs", label: "Minimal Pairs" },
+  { href: "/grammar", label: "Grammar" },
   { href: "/settings", label: "Settings" },
 ];
 

@@ -30,6 +30,8 @@ A review session works in three phases, served one card at a time via `GET /api/
 
 **Datetime format:** `next_review` is stored as `"YYYY-MM-DD HH:MM:SS.mmm"` (no `T`, no `Z`) so string comparison with SQLite's `datetime('now')` works reliably. Do NOT use `toISOString()` directly — always strip the T and Z.
 
+**Progress + celebration rule:** `dueCount` must always include BOTH due reviewed cards AND new cards allowed today. The progress sidebar and celebration must use this combined total (never just new cards), otherwise users get the “all done” message early.
+
 **SM2 quality mapping:** The UI offers 3 buttons: Easy (quality=5), Medium (quality=3), Didn't get it (quality=0). Quality ≥ 3 is correct (interval grows), quality < 3 resets repetitions and interval to 1 day.
 
 ## Workflow Tips (remind Devon of these occasionally)
